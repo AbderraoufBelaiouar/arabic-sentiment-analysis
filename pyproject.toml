@@ -1,0 +1,54 @@
+[project]
+name = "arabic-sentiment"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Abderraouf Belaiouar", email = "abderraouf.belaiouar@ens.uvsq.fr" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "arabert>=1.0.1",
+    "fastapi>=0.142.2",
+    "pandas>=3.0.6",
+    "pydantic>=2.13.5",
+    "pydantic-settings>=2.15.0",
+    "scikit-learn>=1.9.1",
+    "torch>=2.14.1",
+    "transformers>=5.18.0",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+arabic-sentiment = "arabic_sentiment.train:main"
+
+[build-system]
+requires = ["uv_build>=0.12.20,<0.13.0"]
+build-backend = "uv_build"
+
+
+[project.optional-dependencies]
+dev = [
+    "black>=26.5.1",
+    "httpx>=0.28.1",
+    "mypy>=2.4.0",
+    "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.16.10",
+]
+
+
+[tool.pytest.ini_options]
+addopts = "--cov=src/arabic_sentiment --cov-fail-under=70"
+
+[tool.ruff]
+line-length = 100
+
+[tool.black]
+line-length = 100
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4.0",
+]

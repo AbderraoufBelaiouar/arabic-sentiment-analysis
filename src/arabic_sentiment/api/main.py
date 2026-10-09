@@ -84,13 +84,13 @@ async def metadata():
     return MetadataResponse(
         model_version=settings.model_version,
         model_name=settings.model_name,
-        framework="pytorch",
+        framework="onnx",
         max_seq_length=settings.max_seq_length,
     )
 
 
 @app.post("/predict", response_model=PredictionResponse)
-async def predict(request: PredictionRequest):
+async def predict(request: PredictiionRequest):
     """Predict sentiment for Arabic text."""
     correlation_id = str(uuid.uuid4())
 

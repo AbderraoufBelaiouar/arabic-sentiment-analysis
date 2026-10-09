@@ -3,7 +3,7 @@ Configuration management using pydantic-settings.
 
 Settings come from environment variables with sensible defaults.
 In development: uses defaults.
-In Docker:      override via env vars (e.g. MODEL_PATH=/app/models/arabert-twitter-optimized).
+In Docker:      override via env vars (e.g. MODEL_PATH=/app/models/arabert-twitter-onnx).
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ METRIC_FOR_BEST_MODEL = "f1_macro"
 class Settings(BaseSettings):
     """Application settings — all configurable values live here."""
 
-    model_path: str = str(MODELS_DIR / "arabert-twitter-optimized")
+    model_path: str = str(MODELS_DIR / "arabert-twitter-onnx")
     model_name: str = "aubmindlab/bert-base-arabertv02-twitter"
     api_port: int = 8000
     model_version: str = "0.1.0"

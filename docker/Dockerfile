@@ -13,7 +13,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY pyproject.toml uv.lock README.md ./
 COPY src/ ./src/
 
-# Install CPU-only PyTorch first (saves ~1.5GB vs CUDA version)
+# Install CPU-only PyTorch first (saves ~2GB vs CUDA version on PyPI)
 RUN uv pip install --system --no-cache \
     torch --index-url https://download.pytorch.org/whl/cpu
 
@@ -39,16 +39,8 @@ WORKDIR /app
 USER appuser
 
 # --- Environment Variables ---
-# Tell the app where the models are stored
-ENV MODEL_PATH=/app/models
-
-# Redirect torch's compile cache to a writable directory inside the container
-# (Fixes "No space left on device" error on /tmp if the host disk is full)
-ENV TORCHINDUCTOR_CACHE_DIR=/app/.cache/torchinductor
-ENV XDG_CACHE_HOME=/app/.cache
-
-# Pre-create the cache directory with correct permissions
-RUN mkdir -p /app/.cache/torchinductor
+# Tell the app where the ONNX model is stored
+ENV MODEL_PATH=/app/models/arabert-twitter-onnx
 
 EXPOSE 8000
 

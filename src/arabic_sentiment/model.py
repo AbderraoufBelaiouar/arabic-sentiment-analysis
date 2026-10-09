@@ -69,24 +69,25 @@ class SentimentClassifier:
     """
 
     def __init__(self) -> None:
-        self.model = None
+        self.session = None
         self.tokenizer = None
         self.preprocessor = None
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = "cpu"
         self._loaded = False
 
     @timed
     def load(self) -> None:
         """Load the model from disk into memory (called once at startup)."""
-        logger.info(f"Loading model from {settings.model_path}...")
+        import onnxruntime as ort
+        import os
+        
+        logger.info(f"Loading ONNX model from {settings.model_path}...")
 
         self.preprocessor = ArabertPreprocessor(settings.model_name)
         self.tokenizer = AutoTokenizer.from_pretrained(settings.model_path)
-        self.model = AutoModelForSequenceClassification.from_pretrained(
-            settings.model_path
-        )
-        self.model.to(self.device)
-        self.model.eval()
+        
+        onnx_model_path = os.path.join(settings.model_path, "model.onnx")
+        self.session = ort.InferenceSession(onnx_model_path, providers=["CPUExecutionProvider"])
 
         self._loaded = True
         logger.info(f"Model loaded on {self.device}")
@@ -105,24 +106,30 @@ class SentimentClassifier:
 
         inputs = self.tokenizer(
             cleaned,
-            return_tensors="pt",
+            return_tensors="np",
             truncation=True,
             max_length=settings.max_seq_length,
             padding=True,
         )
-        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+        
+        ort_inputs = {
+            "input_ids": inputs["input_ids"],
+            "attention_mask": inputs["attention_mask"]
+        }
 
-        with torch.no_grad():
-            outputs = self.model(**inputs)
+        logits = self.session.run(None, ort_inputs)[0]
+        
+        exp_logits = np.exp(logits - np.max(logits, axis=-1, keepdims=True))
+        probabilities = exp_logits / np.sum(exp_logits, axis=-1, keepdims=True)
+        
+        confidence = float(np.max(probabilities, axis=-1)[0])
+        predicted_class = int(np.argmax(probabilities, axis=-1)[0])
 
-        probabilities = torch.softmax(outputs.logits, dim=-1)
-        confidence, predicted_class = torch.max(probabilities, dim=-1)
-
-        label = LABEL_MAP[predicted_class.item()]
+        label = LABEL_MAP[predicted_class]
 
         return {
             "label": label,
-            "confidence": round(confidence.item(), 4),
+            "confidence": round(confidence, 4),
         }
 
     @timed
@@ -135,25 +142,31 @@ class SentimentClassifier:
 
         inputs = self.tokenizer(
             cleaned,
-            return_tensors="pt",
+            return_tensors="np",
             truncation=True,
             max_length=settings.max_seq_length,
             padding=True,
         )
-        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+        
+        ort_inputs = {
+            "input_ids": inputs["input_ids"],
+            "attention_mask": inputs["attention_mask"]
+        }
 
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-
-        probabilities = torch.softmax(outputs.logits, dim=-1)
-        confidences, predicted_classes = torch.max(probabilities, dim=-1)
+        logits = self.session.run(None, ort_inputs)[0]
+        
+        exp_logits = np.exp(logits - np.max(logits, axis=-1, keepdims=True))
+        probabilities = exp_logits / np.sum(exp_logits, axis=-1, keepdims=True)
+        
+        confidences = np.max(probabilities, axis=-1)
+        predicted_classes = np.argmax(probabilities, axis=-1)
 
         results = []
         for i in range(len(texts)):
             results.append(
                 {
-                    "label": LABEL_MAP[predicted_classes[i].item()],
-                    "confidence": round(confidences[i].item(), 4),
+                    "label": LABEL_MAP[int(predicted_classes[i])],
+                    "confidence": round(float(confidences[i]), 4),
                 }
             )
         return results

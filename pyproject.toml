@@ -10,10 +10,13 @@ requires-python = ">=3.12"
 dependencies = [
     "arabert>=1.0.1",
     "fastapi>=0.142.2",
+    "onnx>=1.15.0",
+    "onnxruntime>=1.16.3",
     "pandas>=3.0.6",
     "pydantic>=2.13.5",
     "pydantic-settings>=2.15.0",
     "scikit-learn>=1.9.1",
+    "sentencepiece",
     "torch>=2.14.1",
     "transformers>=5.18.0",
     "uvicorn>=0.54.0",
@@ -21,7 +24,7 @@ dependencies = [
 
 [project.scripts]
 arabic-sentiment = "arabic_sentiment.train:main"
-
+arabic-sentiment-export = "arabic_sentiment.export:main"
 [build-system]
 requires = ["uv_build>=0.12.20,<0.13.0"]
 build-backend = "uv_build"

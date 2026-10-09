@@ -9,9 +9,7 @@ build/
 # Data & Models (too large for Git — we'll use DVC later)
 data/*.csv
 data/*.parquet
-models/*.pkl
-models/*.onnx
-models/*.pt
+models/
 
 # IDE
 .vscode/

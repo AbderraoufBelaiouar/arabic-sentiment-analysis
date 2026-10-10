@@ -16,9 +16,10 @@ from pydantic_settings import BaseSettings
 # ──────────────────────────────────────────────
 # Derived paths (used by train.py, not by Settings)
 # ──────────────────────────────────────────────
-PROJECT_ROOT = Path(__file__).resolve().parents[3]  # arabic-sentiment/
+PROJECT_ROOT = Path(__file__).resolve().parents[2]  # arabic-sentiment/
 MODELS_DIR = PROJECT_ROOT / "models"
 REPORTS_DIR = PROJECT_ROOT / "reports"
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
 
 # ──────────────────────────────────────────────
 # Dataset constants (training only)

@@ -7,28 +7,29 @@ Responsible for:
 
 from __future__ import annotations
 
-from datasets import DatasetDict, load_dataset
+from datasets import DatasetDict, load_from_disk
 from arabert.preprocess import ArabertPreprocessor
 from transformers import PreTrainedTokenizerBase
 
 from arabic_sentiment.config import (
-    DATASET_NAME,
-    DATASET_SUBSET,
-    MAX_LENGTH,
+    DATA_DIR,
+    settings,
 )
 
 
 def load_arabic_sentiment_dataset() -> DatasetDict:
-    """Download and return the Arabic tweet-sentiment dataset."""
-    return load_dataset(DATASET_NAME, DATASET_SUBSET)
+    """Load the local Arabic tweet-sentiment dataset."""
+    return load_from_disk(str(DATA_DIR))
 
 
 def build_preprocess_fn(
     preprocessor: ArabertPreprocessor,
     tokenizer: PreTrainedTokenizerBase,
-    max_length: int = MAX_LENGTH,
+    max_length: int | None = None,
 ):
     """Return a batched preprocessing function for `dataset.map()`."""
+    if max_length is None:
+        max_length = settings.max_seq_length
 
     def _preprocess(examples: dict) -> dict:
         # Arabic-specific normalisation (diacritics, letter forms, …)
@@ -55,8 +56,10 @@ def tokenize_dataset(
     dataset: DatasetDict,
     preprocessor: ArabertPreprocessor,
     tokenizer: PreTrainedTokenizerBase,
-    max_length: int = MAX_LENGTH,
+    max_length: int | None = None,
 ) -> DatasetDict:
     """Apply ArabertPreprocessor + tokeniser to every split."""
+    if max_length is None:
+        max_length = settings.max_seq_length
     preprocess_fn = build_preprocess_fn(preprocessor, tokenizer, max_length)
     return dataset.map(preprocess_fn, batched=True)

@@ -1,0 +1,28 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: uv run arabic-sentiment
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: ff600d47a3b4e0a311cf266cdcfff190.dir
+      size: 3431365
+      nfiles: 13
+    - path: src/arabic_sentiment/model.py
+      hash: md5
+      md5: f33a606720d90ede894e8d4a8b7bed26
+      size: 7460
+    - path: src/arabic_sentiment/train.py
+      hash: md5
+      md5: 0590f066b6fc7fc72e2378bfbc7349e4
+      size: 5204
+    outs:
+    - path: models/arabert-twitter-onnx
+      hash: md5
+      md5: e4eb0236d0a3a0e43e6be4f0d4250384.dir
+      size: 544063164
+      nfiles: 4
+    - path: reports/metrics.json
+      hash: md5
+      md5: a798d52e329fc28bce0c940fd39936a5
+      size: 155

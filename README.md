@@ -60,3 +60,6 @@ curl -X POST "http://localhost:8000/predict" \
 │   └── test_metrics.py
 └── uv.lock
 ```
+## CI/CD Pipeline & Quality Gates
+This project utilizes GitHub Actions to execute a robust pipeline upon every push to [main](cci:1://file:///home/abderraouf/Desktop/mlops%20mena/arabic-sentiment/src/arabic_sentiment/train.py:41:0-152:23). 
+It runs `ruff` linting and the `pytest` test suite. Crucially, it features an automated Quality Gate: it reads the generated [reports/metrics.json](cci:7://file:///home/abderraouf/Desktop/mlops%20mena/arabic-sentiment/reports/metrics.json:0:0-0:0) file, and if the newly trained model's `f1_macro` drops below the baseline threshold of `0.6900`, the pipeline forcibly fails with `sys.exit(1)`.

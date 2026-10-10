@@ -9,6 +9,7 @@ Usage:
 """
 
 from __future__ import annotations
+import mlflow
 
 import json
 import os
@@ -92,18 +93,30 @@ def main() -> None:
         processing_class=tokenizer,
         callbacks=[EarlyStoppingCallback(early_stopping_patience=EARLY_STOPPING_PATIENCE)],
     )
-
+    mlflow.set_experiment("Arabic_Sentiment_Training")
+    with mlflow.start_run():
+    # Log your setup
+        mlflow.log_params({
+        "model_name": settings.model_name,
+        "learning_rate": LEARNING_RATE,
+        "batch_size": TRAIN_BATCH_SIZE,
+        "epochs": NUM_EPOCHS
+        })
     # ── 6. Train ────────────────────────────────────
-    print("🏋️  Starting training …")
-    trainer.train()
+        print("🏋️  Starting training …")
+        trainer.train()
 
     # ── 7. Evaluate ─────────────────────────────────
-    print("📊  Evaluating …")
-    results = trainer.evaluate()
-    accuracy = results["eval_accuracy"]
-    f1_macro = results["eval_f1_macro"]
-    print(f"    Accuracy : {accuracy:.4f}")
-    print(f"    F1 Macro : {f1_macro:.4f}")
+        print("📊  Evaluating …")
+        results = trainer.evaluate()
+        mlflow.log_metrics({
+        "accuracy": results["eval_accuracy"],
+        "f1_macro": results["eval_f1_macro"]
+         })
+        accuracy = results["eval_accuracy"]
+        f1_macro = results["eval_f1_macro"]
+        print(f"    Accuracy : {accuracy:.4f}")
+        print(f"    F1 Macro : {f1_macro:.4f}")
 
     # ── 8. Save model ──────────────────────────────
     print(f"💾  Saving model → {output_dir}")

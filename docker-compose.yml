@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: arabic-sentimentv1.1:latest
+    container_name: arabic-sentiment-api
+    ports:
+      - "8000:8000"
+    environment:
+      # Optional overrides can go here
+      - MODEL_PATH=/app/models/arabert-twitter-onnx
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health", "||", "exit", "1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: arabic-sentiment-db
+    environment:
+      - POSTGRES_USER=mlflow_user
+      - POSTGRES_PASSWORD=mlflow_pass
+      - POSTGRES_DB=mlflow_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U mlflow_user -d mlflow_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.10.0
+    container_name: arabic-sentiment-mlflow
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "pip install psycopg2-binary &&  mlflow server  --host 0.0.0.0  --port 5000  --backend-store-uri postgresql://mlflow_user:mlflow_pass@postgres:5432/mlflow_db"
+    volumes:
+      - ./reports/mlruns:/mlruns
+
+volumes:
+  postgres_data:

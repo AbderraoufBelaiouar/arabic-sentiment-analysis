@@ -90,7 +90,7 @@ async def metadata():
 
 
 @app.post("/predict", response_model=PredictionResponse)
-async def predict(request: PredictiionRequest):
+async def predict(request: PredictionRequest):
     """Predict sentiment for Arabic text."""
     correlation_id = str(uuid.uuid4())
 
